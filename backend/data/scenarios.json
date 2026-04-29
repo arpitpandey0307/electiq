@@ -1,0 +1,155 @@
+{
+  "scenarios": [
+    {
+      "id": "missed-registration",
+      "title": "What if I missed voter registration?",
+      "icon": "⏰",
+      "description": "Find out what options are available if you missed the registration deadline.",
+      "tree": {
+        "question": "Did the voter registration deadline already pass for your area?",
+        "type": "choice",
+        "options": [
+          {
+            "label": "Yes, it has passed",
+            "next": {
+              "question": "Is there a special revision of the electoral roll ongoing?",
+              "type": "choice",
+              "options": [
+                {
+                  "label": "Yes",
+                  "result": "✅ You may still be able to register! During special revision periods, the Election Commission accepts new registrations. Visit your local Electoral Registration Officer or apply online at voters.eci.gov.in using Form 6.",
+                  "source": "Election Commission of India — eci.gov.in"
+                },
+                {
+                  "label": "No",
+                  "result": "❌ Unfortunately, you cannot vote in this election without being on the electoral roll. However, you can apply now for inclusion in the next revision. Submit Form 6 online at voters.eci.gov.in so you're ready for future elections.",
+                  "source": "National Voters' Service Portal — voters.eci.gov.in"
+                }
+              ]
+            }
+          },
+          {
+            "label": "No, there's still time",
+            "result": "✅ Great news! You can still register. Apply online at voters.eci.gov.in using Form 6, or visit your nearest Electoral Registration Officer with ID proof and address proof. Processing typically takes 2-3 weeks.",
+            "source": "National Voters' Service Portal — voters.eci.gov.in"
+          }
+        ]
+      }
+    },
+    {
+      "id": "candidate-withdraws",
+      "title": "What if a candidate withdraws?",
+      "icon": "🚪",
+      "description": "What happens to the election if a candidate drops out before or after voting day?",
+      "tree": {
+        "question": "When did the candidate withdraw?",
+        "type": "choice",
+        "options": [
+          {
+            "label": "Before the withdrawal deadline",
+            "result": "✅ This is the normal process. Candidates can withdraw their nomination before the deadline (usually 2 days after scrutiny). Their name will be removed from the ballot, and the election proceeds with remaining candidates.",
+            "source": "Representation of the People Act, 1951 — Section 37"
+          },
+          {
+            "label": "After withdrawal deadline but before voting",
+            "result": "⚠️ The candidate's name will remain on the ballot/EVM even though they've informally withdrawn. Votes cast for them will still be counted. They cannot be formally removed after the deadline.",
+            "source": "Election Commission of India Guidelines"
+          },
+          {
+            "label": "The candidate passed away before voting",
+            "result": "🔄 If a contesting candidate dies before the poll, the Election Commission may countermand (cancel) the election in that constituency and order a fresh election with new nominations. This is per Section 52 of the RPA, 1951.",
+            "source": "Representation of the People Act, 1951 — Section 52"
+          }
+        ]
+      }
+    },
+    {
+      "id": "tie-vote",
+      "title": "What happens if there's a tie?",
+      "icon": "⚖️",
+      "description": "Explore what happens when two candidates get exactly the same number of votes.",
+      "tree": {
+        "question": "Two candidates received the exact same number of votes. What happens?",
+        "type": "info",
+        "result": "🎲 In the rare event of a tie, the winner is decided by drawing of lots conducted by the Returning Officer. This is specified in Section 65 of the Representation of the People Act, 1951. The RO uses a method of chance (like picking chits) in the presence of candidates or their agents. This has actually happened a few times in Indian elections!",
+        "source": "Representation of the People Act, 1951 — Section 65"
+      }
+    },
+    {
+      "id": "lost-voter-id",
+      "title": "What if I lost my Voter ID?",
+      "icon": "🆔",
+      "description": "Can you still vote without your Voter ID card on election day?",
+      "tree": {
+        "question": "Have you lost or misplaced your Voter ID card (EPIC)?",
+        "type": "choice",
+        "options": [
+          {
+            "label": "Yes, and election day is soon",
+            "result": "✅ You can still vote! The Election Commission accepts 12 alternative photo ID documents including: Aadhaar Card, Passport, Driving License, PAN Card, Service ID for government employees, Student ID, and more. Carry any of these to the polling booth.",
+            "source": "Election Commission — Acceptable Photo IDs Order"
+          },
+          {
+            "label": "Yes, and I want a replacement",
+            "result": "📝 Apply for a duplicate EPIC online at voters.eci.gov.in or visit your nearest Electoral Registration Officer. Fill Form 002 and submit it. You'll receive a new card, usually within 2-3 weeks. Meanwhile, use an alternative photo ID to vote.",
+            "source": "National Voters' Service Portal — voters.eci.gov.in"
+          }
+        ]
+      }
+    },
+    {
+      "id": "booth-issues",
+      "title": "What if there are issues at the polling booth?",
+      "icon": "🚨",
+      "description": "What to do if you face problems while trying to vote.",
+      "tree": {
+        "question": "What kind of issue are you facing?",
+        "type": "choice",
+        "options": [
+          {
+            "label": "My name is missing from the voter list",
+            "result": "😔 If your name is not on the voter list at your assigned booth, you unfortunately cannot vote at that station. However, ask the Presiding Officer to check if you're registered at a different polling station. For future elections, verify your registration at voters.eci.gov.in well in advance.",
+            "source": "Election Commission of India"
+          },
+          {
+            "label": "Someone already voted using my name",
+            "result": "⚠️ This is called 'impersonation' and is an electoral offence. You can challenge the fake vote by informing the Presiding Officer. You'll need to fill a 'Challenged Vote' form and take a tendered ballot. The impersonation will be recorded and investigated. Report to the Election Commission helpline: 1950.",
+            "source": "Representation of the People Act, 1951 — Section 135"
+          },
+          {
+            "label": "The EVM seems to be malfunctioning",
+            "result": "🔧 Inform the Presiding Officer immediately. EVMs are replaced if they malfunction. A mock poll is conducted on the replacement EVM before voting resumes. Your right to vote is protected — the booth will remain open until all voters in queue have voted.",
+            "source": "Election Commission EVM Guidelines"
+          }
+        ]
+      }
+    },
+    {
+      "id": "election-postponed",
+      "title": "What if elections are postponed?",
+      "icon": "📅",
+      "description": "Under what circumstances can elections be delayed or cancelled?",
+      "tree": {
+        "question": "What situation are you asking about?",
+        "type": "choice",
+        "options": [
+          {
+            "label": "Natural disaster or emergency",
+            "result": "🌊 The Election Commission can postpone polling in affected areas due to natural disasters, floods, or law and order situations. Elections will be rescheduled, and the EC will announce new dates. Your voter registration remains valid.",
+            "source": "Representation of the People Act, 1951 — Section 153"
+          },
+          {
+            "label": "Booth capturing or violence",
+            "result": "🔄 If booth capturing (seizure of a polling station by force) occurs, the Returning Officer or the Election Commission can declare the poll at that booth void and order a repoll. Fresh voting will be held at that specific booth.",
+            "source": "Representation of the People Act, 1951 — Section 58A"
+          },
+          {
+            "label": "National emergency",
+            "result": "⚠️ During a national emergency (Article 352), Parliament can extend the term of the Lok Sabha by one year at a time through legislation, but elections must be held within 6 months after the emergency ends. This provision was used during the 1975-77 Emergency.",
+            "source": "Constitution of India — Article 83"
+          }
+        ]
+      }
+    }
+  ]
+}

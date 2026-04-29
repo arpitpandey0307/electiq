@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ElectIQ — Your AI-powered election education assistant. Learn about voting, elections, and democracy through interactive chat, quizzes, and timelines.">
+  <meta name="theme-color" content="#1a1f6e">
+  <title>ElectIQ — Election Education Assistant</title>
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/chat.css">
+  <link rel="stylesheet" href="/css/timeline.css">
+  <link rel="stylesheet" href="/css/quiz.css">
+</head>
+<body>
+  <div id="app">
+    <!-- ── Header ── -->
+    <header class="app-header">
+      <div class="logo">
+        <span class="logo-icon">🗳️</span>
+        <span class="logo-text">ElectIQ</span>
+      </div>
+      <div class="header-actions">
+        <span class="role-badge" id="roleBadge" title="Change role">🗳️ Voter</span>
+        <button class="btn-icon" id="langToggle" onclick="I18n.toggle()" title="Switch language">🇮🇳</button>
+        <button class="btn-icon" id="darkToggle" title="Toggle dark mode">🌙</button>
+      </div>
+    </header>
+
+    <!-- ── Tab Navigation ── -->
+    <nav class="tab-nav" role="tablist">
+      <button class="tab-btn active" data-tab="chat" role="tab">
+        <span class="tab-icon">💬</span> Chat
+      </button>
+      <button class="tab-btn" data-tab="timeline" role="tab">
+        <span class="tab-icon">🗓️</span> Timeline
+      </button>
+      <button class="tab-btn" data-tab="scenarios" role="tab">
+        <span class="tab-icon">🧩</span> What If?
+      </button>
+      <button class="tab-btn" data-tab="quiz" role="tab">
+        <span class="tab-icon">🏆</span> Quiz
+      </button>
+    </nav>
+
+    <!-- ── Tab: Chat ── -->
+    <div class="tab-content active" id="tab-chat">
+      <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+          <div class="welcome-container">
+            <span class="welcome-icon">🗳️</span>
+            <h2 class="welcome-title">Welcome to ElectIQ!</h2>
+            <p class="welcome-subtitle">Select your role to get started with personalized election guidance.</p>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <div class="chat-input-wrapper">
+            <textarea class="chat-input" id="chatInput" placeholder="Ask me anything about elections..." rows="1"></textarea>
+            <button class="chat-send-btn" id="chatSendBtn" title="Send message">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab: Timeline ── -->
+    <div class="tab-content" id="tab-timeline">
+      <div id="timelineContent">
+        <div class="empty-state">
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+          <p class="empty-text">Loading timeline...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab: Scenarios ── -->
+    <div class="tab-content" id="tab-scenarios">
+      <div id="scenarioContent">
+        <div class="empty-state">
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+          <p class="empty-text">Loading scenarios...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab: Quiz ── -->
+    <div class="tab-content" id="tab-quiz">
+      <div id="quizContent">
+        <div class="empty-state">
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+          <p class="empty-text">Loading quizzes...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Role Selection Modal ── -->
+  <div class="modal-overlay" id="roleModal">
+    <div class="modal-content">
+      <h2 class="modal-title">🗳️ Welcome to ElectIQ</h2>
+      <p class="modal-subtitle">Choose your role so I can personalize your experience</p>
+      <div class="role-grid">
+        <div class="role-card" data-role="voter" onclick="App.selectRole('voter')">
+          <span class="role-icon">🗳️</span>
+          <div class="role-name">First-Time Voter</div>
+          <div class="role-desc">What do I need to do before election day?</div>
+        </div>
+        <div class="role-card" data-role="candidate" onclick="App.selectRole('candidate')">
+          <span class="role-icon">🏛️</span>
+          <div class="role-name">Candidate</div>
+          <div class="role-desc">How do I file my nomination?</div>
+        </div>
+        <div class="role-card" data-role="journalist" onclick="App.selectRole('journalist')">
+          <span class="role-icon">📰</span>
+          <div class="role-name">Journalist</div>
+          <div class="role-desc">What are the campaign spending rules?</div>
+        </div>
+        <div class="role-card" data-role="student" onclick="App.selectRole('student')">
+          <span class="role-icon">🎓</span>
+          <div class="role-name">Student</div>
+          <div class="role-desc">Explain the electoral process to me</div>
+        </div>
+      </div>
+      <div style="text-align:center; margin-top:24px;">
+        <button class="btn btn-primary" onclick="App.confirmRole()" id="roleConfirmBtn">Get Started →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Timeline Detail Panel ── -->
+  <div class="panel-backdrop" id="panelBackdrop"></div>
+  <div class="timeline-detail-panel" id="timelinePanel">
+    <div class="panel-header">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="panel-icon" id="panelIcon"></span>
+        <div>
+          <h3 class="panel-title" id="panelTitle"></h3>
+          <span style="font-size:13px;color:var(--text-muted)" id="panelDate"></span>
+        </div>
+      </div>
+      <button class="panel-close" id="panelClose">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="panel-section">
+        <h4 class="panel-section-title">About This Stage</h4>
+        <p class="panel-description" id="panelDescription"></p>
+      </div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Key Facts</h4>
+        <ul class="panel-facts" id="panelFacts"></ul>
+      </div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Who's Involved</h4>
+        <div class="panel-who" id="panelWho"></div>
+      </div>
+      <div class="panel-section">
+        <h4 class="panel-section-title">Common Questions</h4>
+        <ul class="panel-faq" id="panelFaq"></ul>
+      </div>
+      <button class="btn btn-primary panel-ask-btn" id="panelAskBtn">💬 Ask ElectIQ About This</button>
+    </div>
+  </div>
+
+  <!-- ── Badge Celebration Overlay ── -->
+  <div class="badge-overlay hidden" id="badgeOverlay">
+    <div class="badge-celebrate">
+      <span class="badge-big-icon" id="badgeBigIcon">🏆</span>
+      <h2 class="badge-name" id="badgeName">Badge Earned!</h2>
+      <p class="badge-desc">You're making great progress in civic education!</p>
+      <button class="btn btn-gold" onclick="document.getElementById('badgeOverlay').classList.add('hidden')">Awesome! 🎉</button>
+    </div>
+  </div>
+
+  <!-- ── Scripts ── -->
+  <script src="/js/i18n.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/chat.js"></script>
+  <script src="/js/timeline.js"></script>
+  <script src="/js/quiz.js"></script>
+  <script src="/js/scenarios.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "app_name": "ElectIQ",
+  "tagline": "आपका चुनाव शिक्षा सहायक",
+  "tab_chat": "चैट",
+  "tab_timeline": "समयरेखा",
+  "tab_scenarios": "क्या होगा अगर?",
+  "tab_quiz": "प्रश्नोत्तरी",
+  "choose_role": "आप कौन हैं?",
+  "choose_role_sub": "अपनी भूमिका चुनें ताकि मैं आपके अनुभव को व्यक्तिगत बना सकूं",
+  "role_voter": "पहली बार मतदाता",
+  "role_candidate": "उम्मीदवार",
+  "role_journalist": "पत्रकार",
+  "role_student": "छात्र",
+  "get_started": "शुरू करें",
+  "type_message": "चुनाव के बारे में कुछ भी पूछें...",
+  "send": "भेजें"
+}

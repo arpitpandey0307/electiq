@@ -1,0 +1,40 @@
+{
+  "default": "For the most accurate and up-to-date information, visit the Election Commission of India at eci.gov.in",
+  "topics": {
+    "voter-registration": {
+      "source": "National Voters' Service Portal",
+      "url": "https://voters.eci.gov.in",
+      "description": "Official portal for voter registration, ID search, and electoral roll management"
+    },
+    "voting-process": {
+      "source": "Election Commission of India",
+      "url": "https://eci.gov.in",
+      "description": "Official website of the Election Commission with guidelines, schedules, and procedures"
+    },
+    "candidates": {
+      "source": "Representation of the People Act, 1951",
+      "url": "https://legislative.gov.in/actsofparliamentfromtheyear/representation-people-act-1951",
+      "description": "The primary legislation governing election conduct, nominations, and disputes"
+    },
+    "campaign-rules": {
+      "source": "Model Code of Conduct — Election Commission",
+      "url": "https://eci.gov.in/mcc",
+      "description": "Guidelines governing party and candidate behavior during elections"
+    },
+    "results": {
+      "source": "Election Commission Results Portal",
+      "url": "https://results.eci.gov.in",
+      "description": "Official portal for real-time and historical election results"
+    },
+    "constitution": {
+      "source": "Constitution of India",
+      "url": "https://legislative.gov.in/constitution-of-india",
+      "description": "The fundamental law of India including electoral provisions in Part XV"
+    },
+    "evm": {
+      "source": "ECI — EVM/VVPAT Information",
+      "url": "https://eci.gov.in/evm",
+      "description": "Technical specifications and FAQs about Electronic Voting Machines"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "app_name": "ElectIQ",
+  "tagline": "Your Election Education Assistant",
+  "tab_chat": "Chat",
+  "tab_timeline": "Timeline",
+  "tab_scenarios": "What If?",
+  "tab_quiz": "Quiz",
+  "choose_role": "Who are you?",
+  "choose_role_sub": "Pick your role so I can personalize your experience",
+  "role_voter": "First-Time Voter",
+  "role_candidate": "Candidate",
+  "role_journalist": "Journalist",
+  "role_student": "Student",
+  "get_started": "Get Started",
+  "type_message": "Ask me anything about elections...",
+  "send": "Send"
+}

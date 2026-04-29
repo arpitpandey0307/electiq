@@ -1,0 +1,57 @@
+{
+  "voter-registration": {
+    "title": "Voter Registration",
+    "icon": "📋",
+    "questions": [
+      {"q": "What is the minimum age to vote in India?", "options": ["16 years", "18 years", "21 years", "25 years"], "answer": 1, "explanation": "The Constitution of India (Article 326) sets the minimum voting age at 18. Reduced from 21 by the 61st Amendment Act, 1988."},
+      {"q": "Which document is the primary proof of identity for voting?", "options": ["Aadhaar Card", "PAN Card", "EPIC (Voter ID Card)", "Driving License"], "answer": 2, "explanation": "The EPIC (Voter ID Card) is the primary identity document issued by the Election Commission."},
+      {"q": "What is Form 6 used for?", "options": ["Filing nomination", "New voter registration", "Postal ballot request", "Election complaint"], "answer": 1, "explanation": "Form 6 is for inclusion of name in the electoral roll — used by new voters to register."},
+      {"q": "How can you check if your name is on the voter list?", "options": ["Visit police station", "National Voters' Service Portal", "Prime Minister's office", "Post office"], "answer": 1, "explanation": "The NVSP (voters.eci.gov.in) lets citizens search the electoral roll using EPIC number or personal details."},
+      {"q": "Can NRIs vote in Indian elections?", "options": ["No, never", "Yes, by postal ballot", "Yes, in person at registered constituency", "Yes, at embassies"], "answer": 2, "explanation": "NRIs can vote but must be present in person at their registered polling station per the 2010 Amendment Act."}
+    ]
+  },
+  "voting-process": {
+    "title": "Voting Process",
+    "icon": "🗳️",
+    "questions": [
+      {"q": "What does EVM stand for?", "options": ["Electronic Verification Machine", "Electronic Voting Machine", "Election Validation Module", "Electoral Vote Mechanism"], "answer": 1, "explanation": "EVM = Electronic Voting Machine. India began using EVMs in 1982 and they became universal by 2004."},
+      {"q": "What is VVPAT?", "options": ["Voter Verified Paper Audit Trail", "Vote Validation Processing Terminal", "Virtual Voting Platform for Audit", "Verified Voter Participation Tracker"], "answer": 0, "explanation": "VVPAT prints a slip showing the candidate voted for, allowing voter verification."},
+      {"q": "What is the 'NOTA' option?", "options": ["Not On The Agenda", "None Of The Above", "National Tally Authority", "Nomination Of Temp Authority"], "answer": 1, "explanation": "NOTA allows voters to officially reject all candidates. Introduced by the Supreme Court in 2013."},
+      {"q": "Why is indelible ink applied during voting?", "options": ["Track who voted for which party", "Prevent duplicate voting", "Souvenir for voters", "Verify voter identity"], "answer": 1, "explanation": "Indelible ink prevents the same person from voting twice. It contains silver nitrate and lasts several days."},
+      {"q": "What is the 'silence period' before elections?", "options": ["24 hours", "48 hours", "72 hours", "1 week"], "answer": 1, "explanation": "Campaigning must stop 48 hours before polling to let voters decide without last-minute influence."}
+    ]
+  },
+  "candidates": {
+    "title": "Candidates & Nominations",
+    "icon": "🏛️",
+    "questions": [
+      {"q": "Minimum age to contest Lok Sabha elections?", "options": ["18 years", "21 years", "25 years", "30 years"], "answer": 2, "explanation": "Must be 25 years old per Article 84 of the Indian Constitution."},
+      {"q": "Security deposit for filing nomination?", "options": ["₹10,000", "₹25,000", "₹50,000", "₹1,00,000"], "answer": 1, "explanation": "₹25,000 (₹12,500 for SC/ST). Forfeited if candidate fails to secure 1/6th of valid votes."},
+      {"q": "What is the Model Code of Conduct?", "options": ["A law by Parliament", "EC guidelines for parties & candidates", "Rules for media coverage", "Code for counting votes"], "answer": 1, "explanation": "MCC is guidelines issued by the Election Commission governing behavior of parties, candidates, and government during elections."},
+      {"q": "Can a person contest from multiple constituencies?", "options": ["No, only one", "Up to two", "Up to five", "Unlimited"], "answer": 1, "explanation": "A candidate can contest from max two constituencies. If elected from both, must vacate one within 14 days."},
+      {"q": "Who is the Returning Officer?", "options": ["Head of a party", "Officer managing constituency election", "Judge for disputes", "Vote counting officer"], "answer": 1, "explanation": "The RO manages elections in a constituency — accepting nominations, overseeing polling, declaring results."}
+    ]
+  },
+  "results": {
+    "title": "Results & Government Formation",
+    "icon": "📊",
+    "questions": [
+      {"q": "India's electoral system for Lok Sabha?", "options": ["Proportional Representation", "First Past The Post", "Ranked Choice", "Mixed Member"], "answer": 1, "explanation": "India uses FPTP — candidate with most votes wins, regardless of absolute majority."},
+      {"q": "Seats needed for Lok Sabha majority?", "options": ["200", "256", "272", "300"], "answer": 2, "explanation": "Lok Sabha has 543 seats. Majority = 272 (50%+1)."},
+      {"q": "What if no party gets clear majority?", "options": ["Re-election immediately", "Hung parliament, coalition formed", "EC appoints government", "President rules directly"], "answer": 1, "explanation": "A 'hung parliament' leads to coalition formation. President invites largest party/coalition to prove majority."},
+      {"q": "Days to challenge election results?", "options": ["15", "30", "45", "90"], "answer": 2, "explanation": "Election petition must be filed in High Court within 45 days per the Representation of the People Act, 1951."},
+      {"q": "What are postal ballots for?", "options": ["Online voting", "Voting by those who can't visit stations", "Local body elections only", "Backup for EVM failure"], "answer": 1, "explanation": "Postal ballots allow service voters, disabled persons, and senior citizens (80+) to vote by mail."}
+    ]
+  },
+  "general": {
+    "title": "General Knowledge",
+    "icon": "🎓",
+    "questions": [
+      {"q": "Which body conducts elections in India?", "options": ["Supreme Court", "Parliament", "Election Commission of India", "Home Ministry"], "answer": 2, "explanation": "The ECI is an autonomous constitutional body under Article 324 responsible for all elections."},
+      {"q": "How often are Lok Sabha elections?", "options": ["Every 3 years", "Every 4 years", "Every 5 years", "Every 6 years"], "answer": 2, "explanation": "Every 5 years unless dissolved earlier. Term is 5 years from first meeting."},
+      {"q": "What is a constituency?", "options": ["Party headquarters", "Geographical area with elected member", "Group of voters", "Counting center"], "answer": 1, "explanation": "A constituency is a defined area whose residents elect a representative. India has 543 Lok Sabha constituencies."},
+      {"q": "What is 'universal adult suffrage'?", "options": ["Only educated adults vote", "Only taxpayers vote", "All adult citizens can vote", "Only property owners vote"], "answer": 2, "explanation": "Every citizen 18+ can vote regardless of race, gender, religion, or income. India adopted this from its first election in 1951-52."},
+      {"q": "What is an exit poll?", "options": ["Poll at Parliament exit", "Survey of voters after casting vote", "Final vote count", "Poll to decide if elections happen"], "answer": 1, "explanation": "Exit polls survey voters after voting. Cannot be broadcast until the last voting phase concludes."}
+    ]
+  }
+}

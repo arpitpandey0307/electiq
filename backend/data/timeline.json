@@ -1,0 +1,139 @@
+{
+  "milestones": [
+    {
+      "id": "announcement",
+      "label": "Election Announcement",
+      "date": "2024-03-15",
+      "icon": "📢",
+      "status": "completed",
+      "description": "The Election Commission announces the schedule for upcoming elections, including key dates for nominations, campaigning, and voting.",
+      "details": "The election announcement marks the formal beginning of the electoral process. The Election Commission issues a press conference and gazette notification detailing the complete election schedule. From this moment, the Model Code of Conduct comes into effect, restricting the ruling government from making major policy decisions that could influence voters.",
+      "who_involved": ["Election Commission", "Political Parties", "Media"],
+      "key_facts": [
+        "Model Code of Conduct takes effect immediately",
+        "Schedule covers all phases of multi-phase elections",
+        "Transfer of officials with political affiliations begins"
+      ],
+      "faq": [
+        "What triggers an election announcement?",
+        "Who decides the election dates?",
+        "What is the Model Code of Conduct?",
+        "How far in advance are elections announced?"
+      ]
+    },
+    {
+      "id": "nomination",
+      "label": "Nomination Filing",
+      "date": "2024-03-22",
+      "icon": "📝",
+      "status": "completed",
+      "description": "Candidates file their nomination papers with the returning officer, declaring their intent to contest the election.",
+      "details": "During the nomination phase, aspiring candidates submit their papers along with a security deposit. Each nomination must be proposed by registered electors from the constituency. Candidates must disclose their criminal record, assets, liabilities, and educational qualifications. The returning officer scrutinizes all nominations and publishes the final list of valid candidates after the withdrawal deadline.",
+      "who_involved": ["Candidates", "Returning Officer", "Proposers", "Political Parties"],
+      "key_facts": [
+        "Security deposit required: ₹25,000 for general, ₹12,500 for SC/ST candidates",
+        "Mandatory disclosure of criminal cases, assets, and education",
+        "Nominations can be withdrawn before the deadline",
+        "Scrutiny of nominations happens within days of filing"
+      ],
+      "faq": [
+        "How do I file my nomination?",
+        "What documents are needed for nomination?",
+        "Can an independent candidate file nomination?",
+        "What happens if nomination is rejected?"
+      ]
+    },
+    {
+      "id": "campaign",
+      "label": "Campaign Period",
+      "date": "2024-03-29",
+      "icon": "📣",
+      "status": "active",
+      "description": "Political parties and candidates campaign to win voter support through rallies, advertisements, door-to-door canvassing, and media outreach.",
+      "details": "The campaign period is the most visible phase of the election. Parties hold rallies, release manifestos, and advertise on TV, print, and social media. The Election Commission monitors campaign spending — each candidate has a legally defined expenditure limit. Campaigning must stop 48 hours before polling day (the 'silence period'). Social media campaigns are also regulated, and all political advertisements must be pre-certified.",
+      "who_involved": ["Candidates", "Political Parties", "Election Commission", "Media", "Voters"],
+      "key_facts": [
+        "Expenditure limit varies by state and election type",
+        "Campaigning stops 48 hours before voting (silence period)",
+        "All political ads need pre-certification",
+        "Social media monitoring cells track online campaigns"
+      ],
+      "faq": [
+        "What are the campaign spending limits?",
+        "What is the silence period before elections?",
+        "Can candidates use social media for campaigning?",
+        "What rules govern political advertisements?"
+      ]
+    },
+    {
+      "id": "voting",
+      "label": "Voting Day",
+      "date": "2024-04-19",
+      "icon": "🗳️",
+      "status": "upcoming",
+      "description": "Citizens cast their votes at designated polling booths using Electronic Voting Machines (EVMs) in a free and fair process.",
+      "details": "On voting day, registered voters visit their assigned polling station to cast their ballot. Voters must carry valid photo ID (voter ID card, Aadhaar, passport, etc.). After identity verification, the voter uses the EVM to select their candidate and the VVPAT machine prints a slip for verification. Indelible ink is applied to the voter's finger to prevent duplicate voting. Polling is supervised by presiding officers, and party agents are allowed to observe.",
+      "who_involved": ["Voters", "Presiding Officers", "Polling Agents", "Security Forces", "Election Commission"],
+      "key_facts": [
+        "Voting hours typically: 7 AM to 6 PM",
+        "Valid photo ID required at polling booth",
+        "Indelible ink applied to left index finger",
+        "NOTA (None of the Above) option available",
+        "VVPAT provides paper trail for verification"
+      ],
+      "faq": [
+        "What ID do I need to vote?",
+        "What is an EVM?",
+        "What is NOTA?",
+        "Can I vote if my name is missing from the voter list?",
+        "What happens inside the polling booth?"
+      ]
+    },
+    {
+      "id": "counting",
+      "label": "Vote Counting",
+      "date": "2024-05-23",
+      "icon": "🔢",
+      "status": "upcoming",
+      "description": "Votes from EVMs are counted at designated counting centers under strict security and observation protocols.",
+      "details": "Counting day is one of the most closely watched events. EVMs are transported from strong rooms to counting centers under heavy security. Counting begins with postal ballots, followed by EVM counts round-by-round. Each round covers a set of polling stations. Candidates and their agents can observe the counting process. VVPAT slips from randomly selected booths are cross-verified with EVM totals. Trends are updated in real-time on the Election Commission website.",
+      "who_involved": ["Counting Officers", "Candidates' Agents", "Election Commission", "Observers", "Media"],
+      "key_facts": [
+        "Postal ballots counted first",
+        "EVM counting done round by round",
+        "VVPAT verification of random booths mandatory",
+        "Real-time trends published by Election Commission",
+        "Any discrepancy triggers re-verification"
+      ],
+      "faq": [
+        "How does EVM counting work?",
+        "What is VVPAT verification?",
+        "How long does counting take?",
+        "Can results be challenged?"
+      ]
+    },
+    {
+      "id": "results",
+      "label": "Results Declaration",
+      "date": "2024-05-23",
+      "icon": "🏆",
+      "status": "upcoming",
+      "description": "The Election Commission officially declares winners for each constituency and the overall election outcome.",
+      "details": "Once counting is complete in a constituency, the returning officer declares the result. The candidate with the most votes wins (First Past The Post system). The Election Commission compiles results from all constituencies and publishes the final tally. The party or coalition with a majority of seats is invited to form the government. Results can be challenged through election petitions filed in the High Court within 45 days.",
+      "who_involved": ["Returning Officers", "Election Commission", "Winning Candidates", "Political Parties", "President/Governor"],
+      "key_facts": [
+        "First Past The Post: highest votes wins",
+        "Majority needed: 50%+1 of total seats",
+        "Results can be challenged via election petition",
+        "New government must be formed within specified timeframe",
+        "Election Commission certifies the final results"
+      ],
+      "faq": [
+        "What is First Past The Post?",
+        "What happens if no party gets a majority?",
+        "Can election results be challenged?",
+        "How is the government formed after results?"
+      ]
+    }
+  ]
+}
