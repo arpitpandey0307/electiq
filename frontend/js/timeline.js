@@ -1,5 +1,9 @@
 /**
  * ElectIQ — Timeline Module
+ *
+ * Renders the interactive election process timeline with accessible
+ * milestone nodes, a slide-in detail panel with focus trapping,
+ * and integration with the glossary endpoint.
  */
 
 const Timeline = {
@@ -7,14 +11,14 @@ const Timeline = {
   loaded: false,
 
   init() {
-    // Panel close
+    // Panel close handlers
     document.getElementById('panelClose')?.addEventListener('click', () => this.closePanel());
     document.getElementById('panelBackdrop')?.addEventListener('click', () => this.closePanel());
   },
 
   async load() {
     if (this.loaded) return;
-    
+
     try {
       const res = await fetch('/api/timeline');
       this.data = await res.json();
@@ -22,7 +26,7 @@ const Timeline = {
       this.loaded = true;
     } catch (e) {
       document.getElementById('timelineContent').innerHTML =
-        '<div class="empty-state"><span class="empty-icon">⚠️</span><p class="empty-text">Unable to load timeline. Please try again.</p></div>';
+        '<div class="empty-state" role="alert"><span class="empty-icon" aria-hidden="true">⚠️</span><p class="empty-text">Unable to load timeline. Please try again.</p></div>';
     }
   },
 
@@ -33,14 +37,16 @@ const Timeline = {
     let html = `
       <h2 class="section-title">Election Process Timeline</h2>
       <p class="section-subtitle">Click any milestone to learn more about that stage</p>
-      <div class="timeline-scroll">
-        <div class="timeline">
+      <div class="timeline-scroll" role="region" aria-label="Election timeline">
+        <div class="timeline" role="list">
     `;
 
     milestones.forEach((m, i) => {
       html += `
-        <div class="timeline-node ${m.status}" onclick="Timeline.openPanel('${m.id}')">
-          <div class="timeline-dot">${m.icon}</div>
+        <div class="timeline-node ${m.status}" onclick="Timeline.openPanel('${m.id}')"
+             role="listitem" tabindex="0" aria-label="${m.label} — ${m.status}"
+             onkeydown="if(event.key==='Enter')Timeline.openPanel('${m.id}')">
+          <div class="timeline-dot" aria-hidden="true">${m.icon}</div>
           <span class="timeline-label">${m.label}</span>
           <span class="timeline-date">${this.formatDate(m.date)}</span>
         </div>
@@ -52,8 +58,8 @@ const Timeline = {
     // Glossary section
     html += `
       <h2 class="section-title" style="margin-top:32px">📊 Key Election Terms</h2>
-      <p class="section-subtitle">Click a term to learn more</p>
-      <div class="glossary-grid" id="glossaryGrid"></div>
+      <p class="section-subtitle">Click a term to expand its definition</p>
+      <div class="glossary-grid" id="glossaryGrid" role="list"></div>
     `;
 
     container.innerHTML = html;
@@ -65,16 +71,18 @@ const Timeline = {
       const res = await fetch('/api/glossary');
       const data = await res.json();
       const grid = document.getElementById('glossaryGrid');
-      
+
       grid.innerHTML = data.terms.map(t => `
-        <div class="glossary-card" onclick="this.classList.toggle('expanded')">
+        <div class="glossary-card" onclick="this.classList.toggle('expanded')"
+             role="listitem" tabindex="0" aria-expanded="false"
+             onkeydown="if(event.key==='Enter'){this.classList.toggle('expanded');this.setAttribute('aria-expanded',this.classList.contains('expanded'))}">
           <div class="card-header">
-            <span class="card-icon">${t.icon}</span>
+            <span class="card-icon" aria-hidden="true">${t.icon}</span>
             <span class="card-term">${t.term}</span>
           </div>
           <p class="card-short">${t.short}</p>
           <div class="card-detail">${t.detailed}</div>
-          <button class="dig-deeper">Dig Deeper ↓</button>
+          <button class="dig-deeper" aria-label="Show detailed definition of ${t.term}">Dig Deeper ↓</button>
         </div>
       `).join('');
     } catch (e) { /* skip glossary on error */ }
@@ -95,12 +103,16 @@ const Timeline = {
 
     // Who's involved
     const whoEl = document.getElementById('panelWho');
-    whoEl.innerHTML = m.who_involved.map(w => `<span class="panel-who-tag">${w}</span>`).join('');
+    whoEl.innerHTML = m.who_involved.map(w =>
+      `<span class="panel-who-tag" role="listitem">${w}</span>`
+    ).join('');
 
     // FAQ
     const faqEl = document.getElementById('panelFaq');
     faqEl.innerHTML = m.faq.map(q =>
-      `<li onclick="Chat.askAbout('${q.replace(/'/g, "\\'")}')">${q}</li>`
+      `<li onclick="Chat.askAbout('${q.replace(/'/g, "\\'")}')"
+           tabindex="0" role="button"
+           onkeydown="if(event.key==='Enter')Chat.askAbout('${q.replace(/'/g, "\\'")}')">${q}</li>`
     ).join('');
 
     // Ask button
@@ -109,20 +121,33 @@ const Timeline = {
       this.closePanel();
     };
 
-    // Open
-    document.getElementById('timelinePanel').classList.add('open');
+    // Open panel with accessibility
+    const panel = document.getElementById('timelinePanel');
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
     document.getElementById('panelBackdrop').classList.add('visible');
     document.body.style.overflow = 'hidden';
+
+    // Move focus to close button for keyboard users
+    document.getElementById('panelClose').focus();
+
+    App.announce(`Opened details for ${m.label}`);
   },
 
   closePanel() {
-    document.getElementById('timelinePanel').classList.remove('open');
+    const panel = document.getElementById('timelinePanel');
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
     document.getElementById('panelBackdrop').classList.remove('visible');
     document.body.style.overflow = '';
+
+    App.announce('Detail panel closed');
   },
 
   formatDate(dateStr) {
     const d = new Date(dateStr);
-    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    return d.toLocaleDateString('en-IN', {
+      day: 'numeric', month: 'short', year: 'numeric'
+    });
   }
 };

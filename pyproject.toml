@@ -1,0 +1,23 @@
+[project]
+name = "electiq"
+version = "1.0.0"
+description = "Election Process Education Assistant — AI-powered, gamified civic education"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short --strict-markers"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+
+[tool.coverage.run]
+source = ["backend"]
+omit = ["tests/*", "backend/__pycache__/*"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 70

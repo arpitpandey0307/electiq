@@ -1,28 +1,40 @@
 """
-Scenarios Router — Serves what-if scenario decision trees.
+Scenarios & Glossary Router — Serves interactive decision trees
+and election term definitions from cached data.
+
+Provides what-if scenario simulations and an expandable glossary
+for the election education UI.
 """
 
-import json
-from pathlib import Path
 from fastapi import APIRouter
+
+from backend.config import DataCache, logger
 
 router = APIRouter()
 
-DATA_PATH = Path(__file__).parent.parent / "data" / "scenarios.json"
 
-
-@router.get("/api/scenarios")
+@router.get(
+    "/api/scenarios",
+    summary="Get what-if scenarios",
+    description="Returns all interactive what-if scenario decision trees "
+    "covering common election situations like missed registration, "
+    "candidate withdrawal, and polling booth issues.",
+)
 async def get_scenarios():
-    """Return all what-if scenarios."""
-    with open(DATA_PATH, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    return data
+    """Return all what-if scenarios from cached data."""
+    cache = DataCache.get_instance()
+    logger.info("Serving scenario data")
+    return cache.scenarios
 
 
-@router.get("/api/glossary")
+@router.get(
+    "/api/glossary",
+    summary="Get election glossary",
+    description="Returns definitions for key electoral terms including "
+    "short summaries and detailed explanations.",
+)
 async def get_glossary():
-    """Return glossary of election terms."""
-    glossary_path = Path(__file__).parent.parent / "data" / "glossary.json"
-    with open(glossary_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    return data
+    """Return glossary of election terms from cached data."""
+    cache = DataCache.get_instance()
+    logger.info("Serving glossary data")
+    return cache.glossary

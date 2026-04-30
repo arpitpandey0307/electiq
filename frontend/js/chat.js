@@ -1,5 +1,8 @@
 /**
- * ElectIQ — Chat Module: SSE streaming + typewriter effect
+ * ElectIQ — Chat Module
+ *
+ * SSE streaming chat with typewriter effect, accessible message log,
+ * and quiz topic detection with cross-tab navigation.
  */
 
 const Chat = {
@@ -31,7 +34,6 @@ const Chat = {
   },
 
   onRoleSelected(role) {
-    // Show welcome + fetch suggestions
     this.showWelcome(role);
     this.fetchSuggestions(role);
   },
@@ -45,11 +47,11 @@ const Chat = {
     };
 
     this.messagesEl.innerHTML = `
-      <div class="welcome-container">
-        <span class="welcome-icon">🗳️</span>
+      <div class="welcome-container" role="status">
+        <span class="welcome-icon" aria-hidden="true">🗳️</span>
         <h2 class="welcome-title">Welcome to ElectIQ!</h2>
         <p class="welcome-subtitle">${roleGreetings[role] || roleGreetings.voter}</p>
-        <div class="suggestions" id="chatSuggestions"></div>
+        <div class="suggestions" id="chatSuggestions" role="group" aria-label="Suggested questions"></div>
       </div>
     `;
   },
@@ -61,7 +63,6 @@ const Chat = {
       this.suggestions = data.suggestions || [];
       this.renderSuggestions();
     } catch (e) {
-      // Fallback suggestions
       this.suggestions = [
         "How does voting work?",
         "What ID do I need?",
@@ -75,9 +76,9 @@ const Chat = {
   renderSuggestions() {
     const container = document.getElementById('chatSuggestions');
     if (!container) return;
-    
+
     container.innerHTML = this.suggestions.map(q =>
-      `<button class="suggestion-chip" onclick="Chat.useSuggestion('${q.replace(/'/g, "\\'")}')">${q}</button>`
+      `<button class="suggestion-chip" onclick="Chat.useSuggestion('${q.replace(/'/g, "\\'")}')" aria-label="Ask: ${q}">${q}</button>`
     ).join('');
   },
 
@@ -108,6 +109,7 @@ const Chat = {
     // Stream AI response
     this.isStreaming = true;
     this.sendBtn.disabled = true;
+    this.sendBtn.setAttribute('aria-busy', 'true');
 
     try {
       const response = await fetch('/api/chat', {
@@ -116,7 +118,7 @@ const Chat = {
         body: JSON.stringify({
           role: App.state.role || 'voter',
           message: text,
-          history: this.history.slice(-10) // Last 10 messages for context
+          history: this.history.slice(-10)
         })
       });
 
@@ -156,29 +158,33 @@ const Chat = {
       }
 
       this.history.push({ role: 'assistant', content: fullResponse });
-      
+      App.announce('ElectIQ has responded');
+
       // Check for quiz trigger
       this.checkQuizTrigger(fullResponse, text);
 
     } catch (err) {
       this.hideTyping();
       this.addMessage('ai', 'Sorry, I had trouble connecting. Please try again.');
+      App.announce('Error: Could not get a response');
     }
 
     this.isStreaming = false;
     this.sendBtn.disabled = false;
+    this.sendBtn.setAttribute('aria-busy', 'false');
     this.inputEl.focus();
   },
 
   addMessage(type, content, streaming = false) {
     const div = document.createElement('div');
     div.className = `message ${type}`;
-    
+    div.setAttribute('role', 'article');
+
     const avatar = type === 'ai' ? '🗳️' : '👤';
     const sender = type === 'ai' ? 'ElectIQ' : 'You';
-    
+
     div.innerHTML = `
-      <div class="message-avatar">${avatar}</div>
+      <div class="message-avatar" aria-hidden="true">${avatar}</div>
       <div class="message-body">
         <span class="message-sender">${sender}</span>
         <div class="message-content">
@@ -186,7 +192,7 @@ const Chat = {
         </div>
       </div>
     `;
-    
+
     this.messagesEl.appendChild(div);
     this.scrollToBottom();
     return div;
@@ -196,8 +202,10 @@ const Chat = {
     const div = document.createElement('div');
     div.className = 'typing-indicator';
     div.id = 'typingIndicator';
+    div.setAttribute('role', 'status');
+    div.setAttribute('aria-label', 'ElectIQ is typing');
     div.innerHTML = `
-      <div class="message-avatar" style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">🗳️</div>
+      <div class="message-avatar" aria-hidden="true" style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">🗳️</div>
       <div class="typing-dots"><span></span><span></span><span></span></div>
     `;
     this.messagesEl.appendChild(div);
@@ -209,7 +217,6 @@ const Chat = {
   },
 
   formatMarkdown(text) {
-    // Simple markdown → HTML
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -222,15 +229,18 @@ const Chat = {
     const quizTopics = ['registration', 'voting', 'candidate', 'nomination', 'counting', 'result', 'evm', 'ballot'];
     const lowerQ = question.toLowerCase();
     const matchedTopic = quizTopics.find(t => lowerQ.includes(t));
-    
+
     if (matchedTopic) {
       const cta = document.createElement('div');
       cta.className = 'quiz-cta';
+      cta.setAttribute('role', 'button');
+      cta.setAttribute('tabindex', '0');
+      cta.setAttribute('aria-label', 'Test your knowledge on this topic with a quiz');
       cta.onclick = () => { App.switchTab('quiz'); };
+      cta.onkeydown = (e) => { if (e.key === 'Enter') App.switchTab('quiz'); };
       cta.innerHTML = `
-        <span>🏆</span>
+        <span aria-hidden="true">🏆</span>
         <span class="quiz-cta-text">Test your knowledge on this topic! →</span>
-        <span class="quiz-cta-arrow">→</span>
       `;
       this.messagesEl.appendChild(cta);
       this.scrollToBottom();
@@ -241,7 +251,6 @@ const Chat = {
     this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
   },
 
-  // Called from timeline/scenarios to pre-fill a question
   askAbout(text) {
     App.switchTab('chat');
     this.inputEl.value = text;

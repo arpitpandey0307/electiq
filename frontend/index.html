@@ -1,12 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="ElectIQ — Your AI-powered election education assistant. Learn about voting, elections, and democracy through interactive chat, quizzes, and timelines.">
   <meta name="theme-color" content="#1a1f6e">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="ElectIQ Team">
+  <meta property="og:title" content="ElectIQ — Election Education Assistant">
+  <meta property="og:description" content="AI-powered, gamified civic education platform for informed citizens.">
+  <meta property="og:type" content="website">
   <title>ElectIQ — Election Education Assistant</title>
-  
+
+  <!-- Preconnect to Google Fonts for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
   <!-- Styles -->
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/chat.css">
@@ -14,131 +23,143 @@
   <link rel="stylesheet" href="/css/quiz.css">
 </head>
 <body>
+  <!-- Skip Navigation Link for keyboard/screen-reader users -->
+  <a href="#main-content" class="skip-link" id="skipNav">Skip to main content</a>
+
   <div id="app">
     <!-- ── Header ── -->
-    <header class="app-header">
+    <header class="app-header" role="banner">
       <div class="logo">
-        <span class="logo-icon">🗳️</span>
+        <span class="logo-icon" aria-hidden="true">🗳️</span>
         <span class="logo-text">ElectIQ</span>
       </div>
       <div class="header-actions">
-        <span class="role-badge" id="roleBadge" title="Change role">🗳️ Voter</span>
-        <button class="btn-icon" id="langToggle" onclick="I18n.toggle()" title="Switch language">🇮🇳</button>
-        <button class="btn-icon" id="darkToggle" title="Toggle dark mode">🌙</button>
+        <button class="role-badge" id="roleBadge" title="Change your role" aria-label="Change role. Current role: Voter">🗳️ Voter</button>
+        <button class="btn-icon" id="langToggle" onclick="I18n.toggle()" title="Switch language between English and Hindi" aria-label="Switch language">🇮🇳</button>
+        <button class="btn-icon" id="darkToggle" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
       </div>
     </header>
 
     <!-- ── Tab Navigation ── -->
-    <nav class="tab-nav" role="tablist">
-      <button class="tab-btn active" data-tab="chat" role="tab">
-        <span class="tab-icon">💬</span> Chat
+    <nav class="tab-nav" role="tablist" aria-label="Main navigation">
+      <button class="tab-btn active" data-tab="chat" role="tab" id="tab-btn-chat" aria-selected="true" aria-controls="tab-chat" tabindex="0">
+        <span class="tab-icon" aria-hidden="true">💬</span> Chat
       </button>
-      <button class="tab-btn" data-tab="timeline" role="tab">
-        <span class="tab-icon">🗓️</span> Timeline
+      <button class="tab-btn" data-tab="timeline" role="tab" id="tab-btn-timeline" aria-selected="false" aria-controls="tab-timeline" tabindex="-1">
+        <span class="tab-icon" aria-hidden="true">🗓️</span> Timeline
       </button>
-      <button class="tab-btn" data-tab="scenarios" role="tab">
-        <span class="tab-icon">🧩</span> What If?
+      <button class="tab-btn" data-tab="scenarios" role="tab" id="tab-btn-scenarios" aria-selected="false" aria-controls="tab-scenarios" tabindex="-1">
+        <span class="tab-icon" aria-hidden="true">🧩</span> What If?
       </button>
-      <button class="tab-btn" data-tab="quiz" role="tab">
-        <span class="tab-icon">🏆</span> Quiz
+      <button class="tab-btn" data-tab="quiz" role="tab" id="tab-btn-quiz" aria-selected="false" aria-controls="tab-quiz" tabindex="-1">
+        <span class="tab-icon" aria-hidden="true">🏆</span> Quiz
       </button>
     </nav>
 
-    <!-- ── Tab: Chat ── -->
-    <div class="tab-content active" id="tab-chat">
-      <div class="chat-container">
-        <div class="chat-messages" id="chatMessages">
-          <div class="welcome-container">
-            <span class="welcome-icon">🗳️</span>
-            <h2 class="welcome-title">Welcome to ElectIQ!</h2>
-            <p class="welcome-subtitle">Select your role to get started with personalized election guidance.</p>
+    <!-- ── Main Content ── -->
+    <main id="main-content">
+      <!-- Live region for dynamic content announcements -->
+      <div id="liveAnnouncements" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+      <!-- ── Tab: Chat ── -->
+      <div class="tab-content active" id="tab-chat" role="tabpanel" aria-labelledby="tab-btn-chat">
+        <div class="chat-container">
+          <div class="chat-messages" id="chatMessages" role="log" aria-label="Chat messages" aria-live="polite">
+            <div class="welcome-container">
+              <span class="welcome-icon" aria-hidden="true">🗳️</span>
+              <h1 class="welcome-title">Welcome to ElectIQ!</h1>
+              <p class="welcome-subtitle">Select your role to get started with personalized election guidance.</p>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <div class="chat-input-wrapper">
+              <label for="chatInput" class="sr-only">Type your election question</label>
+              <textarea class="chat-input" id="chatInput" placeholder="Ask me anything about elections..." rows="1" aria-label="Type your election question" maxlength="2000"></textarea>
+              <button class="chat-send-btn" id="chatSendBtn" title="Send message" aria-label="Send message">
+                <span aria-hidden="true">➤</span>
+              </button>
+            </div>
           </div>
         </div>
-        <div class="chat-input-area">
-          <div class="chat-input-wrapper">
-            <textarea class="chat-input" id="chatInput" placeholder="Ask me anything about elections..." rows="1"></textarea>
-            <button class="chat-send-btn" id="chatSendBtn" title="Send message">➤</button>
+      </div>
+
+      <!-- ── Tab: Timeline ── -->
+      <div class="tab-content" id="tab-timeline" role="tabpanel" aria-labelledby="tab-btn-timeline">
+        <div id="timelineContent">
+          <div class="empty-state" role="status">
+            <div class="loading-dots" aria-label="Loading timeline"><span></span><span></span><span></span></div>
+            <p class="empty-text">Loading timeline...</p>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- ── Tab: Timeline ── -->
-    <div class="tab-content" id="tab-timeline">
-      <div id="timelineContent">
-        <div class="empty-state">
-          <div class="loading-dots"><span></span><span></span><span></span></div>
-          <p class="empty-text">Loading timeline...</p>
+      <!-- ── Tab: Scenarios ── -->
+      <div class="tab-content" id="tab-scenarios" role="tabpanel" aria-labelledby="tab-btn-scenarios">
+        <div id="scenarioContent">
+          <div class="empty-state" role="status">
+            <div class="loading-dots" aria-label="Loading scenarios"><span></span><span></span><span></span></div>
+            <p class="empty-text">Loading scenarios...</p>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- ── Tab: Scenarios ── -->
-    <div class="tab-content" id="tab-scenarios">
-      <div id="scenarioContent">
-        <div class="empty-state">
-          <div class="loading-dots"><span></span><span></span><span></span></div>
-          <p class="empty-text">Loading scenarios...</p>
+      <!-- ── Tab: Quiz ── -->
+      <div class="tab-content" id="tab-quiz" role="tabpanel" aria-labelledby="tab-btn-quiz">
+        <div id="quizContent">
+          <div class="empty-state" role="status">
+            <div class="loading-dots" aria-label="Loading quizzes"><span></span><span></span><span></span></div>
+            <p class="empty-text">Loading quizzes...</p>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- ── Tab: Quiz ── -->
-    <div class="tab-content" id="tab-quiz">
-      <div id="quizContent">
-        <div class="empty-state">
-          <div class="loading-dots"><span></span><span></span><span></span></div>
-          <p class="empty-text">Loading quizzes...</p>
-        </div>
-      </div>
-    </div>
+    </main>
   </div>
 
   <!-- ── Role Selection Modal ── -->
-  <div class="modal-overlay" id="roleModal">
-    <div class="modal-content">
-      <h2 class="modal-title">🗳️ Welcome to ElectIQ</h2>
-      <p class="modal-subtitle">Choose your role so I can personalize your experience</p>
-      <div class="role-grid">
-        <div class="role-card" data-role="voter" onclick="App.selectRole('voter')">
-          <span class="role-icon">🗳️</span>
+  <div class="modal-overlay" id="roleModal" role="dialog" aria-modal="true" aria-labelledby="roleModalTitle" aria-describedby="roleModalDesc">
+    <div class="modal-content" role="document">
+      <h2 class="modal-title" id="roleModalTitle">🗳️ Welcome to ElectIQ</h2>
+      <p class="modal-subtitle" id="roleModalDesc">Choose your role so I can personalize your experience</p>
+      <div class="role-grid" role="radiogroup" aria-label="Select your role">
+        <div class="role-card" data-role="voter" onclick="App.selectRole('voter')" role="radio" aria-checked="false" tabindex="0" aria-label="First-Time Voter: What do I need to do before election day?">
+          <span class="role-icon" aria-hidden="true">🗳️</span>
           <div class="role-name">First-Time Voter</div>
           <div class="role-desc">What do I need to do before election day?</div>
         </div>
-        <div class="role-card" data-role="candidate" onclick="App.selectRole('candidate')">
-          <span class="role-icon">🏛️</span>
+        <div class="role-card" data-role="candidate" onclick="App.selectRole('candidate')" role="radio" aria-checked="false" tabindex="0" aria-label="Candidate: How do I file my nomination?">
+          <span class="role-icon" aria-hidden="true">🏛️</span>
           <div class="role-name">Candidate</div>
           <div class="role-desc">How do I file my nomination?</div>
         </div>
-        <div class="role-card" data-role="journalist" onclick="App.selectRole('journalist')">
-          <span class="role-icon">📰</span>
+        <div class="role-card" data-role="journalist" onclick="App.selectRole('journalist')" role="radio" aria-checked="false" tabindex="0" aria-label="Journalist: What are the campaign spending rules?">
+          <span class="role-icon" aria-hidden="true">📰</span>
           <div class="role-name">Journalist</div>
           <div class="role-desc">What are the campaign spending rules?</div>
         </div>
-        <div class="role-card" data-role="student" onclick="App.selectRole('student')">
-          <span class="role-icon">🎓</span>
+        <div class="role-card" data-role="student" onclick="App.selectRole('student')" role="radio" aria-checked="false" tabindex="0" aria-label="Student: Explain the electoral process to me">
+          <span class="role-icon" aria-hidden="true">🎓</span>
           <div class="role-name">Student</div>
           <div class="role-desc">Explain the electoral process to me</div>
         </div>
       </div>
       <div style="text-align:center; margin-top:24px;">
-        <button class="btn btn-primary" onclick="App.confirmRole()" id="roleConfirmBtn">Get Started →</button>
+        <button class="btn btn-primary" onclick="App.confirmRole()" id="roleConfirmBtn" aria-label="Confirm role selection and get started">Get Started →</button>
       </div>
     </div>
   </div>
 
   <!-- ── Timeline Detail Panel ── -->
-  <div class="panel-backdrop" id="panelBackdrop"></div>
-  <div class="timeline-detail-panel" id="timelinePanel">
+  <div class="panel-backdrop" id="panelBackdrop" aria-hidden="true"></div>
+  <aside class="timeline-detail-panel" id="timelinePanel" role="complementary" aria-label="Timeline milestone details" aria-hidden="true">
     <div class="panel-header">
       <div style="display:flex;align-items:center;gap:12px;">
-        <span class="panel-icon" id="panelIcon"></span>
+        <span class="panel-icon" id="panelIcon" aria-hidden="true"></span>
         <div>
           <h3 class="panel-title" id="panelTitle"></h3>
           <span style="font-size:13px;color:var(--text-muted)" id="panelDate"></span>
         </div>
       </div>
-      <button class="panel-close" id="panelClose">✕</button>
+      <button class="panel-close" id="panelClose" aria-label="Close detail panel">✕</button>
     </div>
     <div class="panel-body">
       <div class="panel-section">
@@ -147,27 +168,27 @@
       </div>
       <div class="panel-section">
         <h4 class="panel-section-title">Key Facts</h4>
-        <ul class="panel-facts" id="panelFacts"></ul>
+        <ul class="panel-facts" id="panelFacts" role="list"></ul>
       </div>
       <div class="panel-section">
         <h4 class="panel-section-title">Who's Involved</h4>
-        <div class="panel-who" id="panelWho"></div>
+        <div class="panel-who" id="panelWho" role="list"></div>
       </div>
       <div class="panel-section">
         <h4 class="panel-section-title">Common Questions</h4>
-        <ul class="panel-faq" id="panelFaq"></ul>
+        <ul class="panel-faq" id="panelFaq" role="list"></ul>
       </div>
-      <button class="btn btn-primary panel-ask-btn" id="panelAskBtn">💬 Ask ElectIQ About This</button>
+      <button class="btn btn-primary panel-ask-btn" id="panelAskBtn" aria-label="Ask ElectIQ about this topic">💬 Ask ElectIQ About This</button>
     </div>
-  </div>
+  </aside>
 
   <!-- ── Badge Celebration Overlay ── -->
-  <div class="badge-overlay hidden" id="badgeOverlay">
+  <div class="badge-overlay hidden" id="badgeOverlay" role="alertdialog" aria-label="Badge earned celebration" aria-modal="true">
     <div class="badge-celebrate">
-      <span class="badge-big-icon" id="badgeBigIcon">🏆</span>
+      <span class="badge-big-icon" id="badgeBigIcon" aria-hidden="true">🏆</span>
       <h2 class="badge-name" id="badgeName">Badge Earned!</h2>
       <p class="badge-desc">You're making great progress in civic education!</p>
-      <button class="btn btn-gold" onclick="document.getElementById('badgeOverlay').classList.add('hidden')">Awesome! 🎉</button>
+      <button class="btn btn-gold" onclick="document.getElementById('badgeOverlay').classList.add('hidden')" aria-label="Dismiss badge celebration">Awesome! 🎉</button>
     </div>
   </div>
 

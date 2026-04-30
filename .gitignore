@@ -35,3 +35,8 @@ desktop.ini
 # Build
 build/
 *.spec
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/

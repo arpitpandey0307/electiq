@@ -1,19 +1,25 @@
 """
-Timeline Router — Serves election timeline milestone data.
+Timeline Router — Serves election timeline milestone data from cache.
+
+Provides the election process timeline with milestone details,
+key facts, and FAQ data for the interactive timeline UI.
 """
 
-import json
-from pathlib import Path
 from fastapi import APIRouter
+
+from backend.config import DataCache, logger
 
 router = APIRouter()
 
-DATA_PATH = Path(__file__).parent.parent / "data" / "timeline.json"
 
-
-@router.get("/api/timeline")
+@router.get(
+    "/api/timeline",
+    summary="Get election timeline",
+    description="Returns all election process milestones with dates, "
+    "descriptions, key facts, who's involved, and FAQ items.",
+)
 async def get_timeline():
-    """Return election timeline milestones."""
-    with open(DATA_PATH, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    return data
+    """Return election timeline milestones from cached data."""
+    cache = DataCache.get_instance()
+    logger.info("Serving election timeline data")
+    return cache.timeline
