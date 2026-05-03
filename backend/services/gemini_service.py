@@ -1,74 +1,134 @@
 """
-Gemini Service — Google Gemini API wrapper with streaming support.
+Gemini Service — Google Gemini API integration using the official SDK.
 
-Uses a shared httpx.AsyncClient for connection pooling and implements
-Gemini safety settings for responsible AI usage. Falls back to curated
-demo responses when no API key is configured.
+Uses the ``google-generativeai`` SDK for direct integration with
+Google's Gemini models. Implements responsible AI safety settings,
+streaming responses, and graceful fallback to curated demo responses
+when no API key is configured.
+
+Google Cloud Services:
+    - Google Gemini 2.5 Flash (generative AI model)
+    - Google AI Safety filters (harassment, hate, explicit, dangerous)
 """
 
-import json
+from __future__ import annotations
+
 import asyncio
 from typing import AsyncGenerator, Optional
 
-import httpx
-
 from backend.config import (
     GEMINI_API_KEY,
-    GEMINI_STREAM_URL,
-    GEMINI_TIMEOUT_SECONDS,
+    GEMINI_MODEL,
     GEMINI_MAX_OUTPUT_TOKENS,
     GEMINI_TEMPERATURE,
     logger,
 )
 
+__all__ = ["GeminiService"]
 
-# ── Shared HTTP Client (initialized at startup) ──
-_http_client: Optional[httpx.AsyncClient] = None
-
-
-async def startup_client() -> None:
-    """Initialize the shared httpx client with connection pooling."""
-    global _http_client
-    _http_client = httpx.AsyncClient(
-        timeout=httpx.Timeout(GEMINI_TIMEOUT_SECONDS, connect=10.0),
-        limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
-        headers={"Content-Type": "application/json"},
+# ── Attempt to import Google Generative AI SDK ──
+try:
+    import google.generativeai as genai
+    from google.generativeai.types import (
+        HarmCategory,
+        HarmBlockThreshold,
+        GenerationConfig,
     )
-    logger.info("HTTP client initialized with connection pooling")
+
+    _SDK_AVAILABLE = True
+except ImportError:
+    _SDK_AVAILABLE = False
+    genai = None  # type: ignore[assignment]
+    logger.warning(
+        "google-generativeai SDK not installed; using HTTP fallback"
+    )
 
 
-async def shutdown_client() -> None:
-    """Close the shared httpx client and release connections."""
-    global _http_client
-    if _http_client:
-        await _http_client.aclose()
-        _http_client = None
-        logger.info("HTTP client closed")
+class GeminiService:
+    """
+    Singleton service for Google Gemini API interactions.
+
+    Encapsulates all Gemini API configuration, safety settings,
+    and streaming logic. Replaces global state with a clean
+    class-based pattern.
+
+    Attributes:
+        _initialized: Whether the service has been configured.
+        _model_name: The Gemini model identifier to use.
+    """
+
+    _initialized: bool = False
+    _model_name: str = GEMINI_MODEL
+
+    @classmethod
+    def initialize(cls) -> None:
+        """
+        Configure the Google Generative AI SDK with the API key.
+
+        Called once during application startup. Safe to call multiple
+        times (idempotent).
+        """
+        if cls._initialized:
+            return
+
+        if GEMINI_API_KEY and _SDK_AVAILABLE:
+            genai.configure(api_key=GEMINI_API_KEY)
+            logger.info(
+                "Google Gemini SDK initialized with model: %s",
+                cls._model_name,
+            )
+        elif not GEMINI_API_KEY:
+            logger.info(
+                "Gemini API key not configured — demo mode enabled"
+            )
+        cls._initialized = True
+
+    @classmethod
+    def is_available(cls) -> bool:
+        """Check whether the Gemini API is configured and SDK is available."""
+        return bool(GEMINI_API_KEY) and _SDK_AVAILABLE
+
+    @classmethod
+    def _create_model(
+        cls, system_prompt: str
+    ) -> Optional[object]:
+        """
+        Create a Gemini GenerativeModel instance with safety settings.
+
+        Args:
+            system_prompt: Role-aware system instruction for the model.
+
+        Returns:
+            Configured GenerativeModel instance, or None if unavailable.
+        """
+        if not cls.is_available():
+            return None
+
+        safety_settings = {
+            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+        }
+
+        generation_config = GenerationConfig(
+            temperature=GEMINI_TEMPERATURE,
+            top_p=0.9,
+            top_k=40,
+            max_output_tokens=GEMINI_MAX_OUTPUT_TOKENS,
+        )
+
+        return genai.GenerativeModel(
+            model_name=cls._model_name,
+            safety_settings=safety_settings,
+            generation_config=generation_config,
+            system_instruction=system_prompt,
+        )
 
 
-# ── Gemini Safety Settings ──
-SAFETY_SETTINGS = [
-    {
-        "category": "HARM_CATEGORY_HARASSMENT",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE",
-    },
-    {
-        "category": "HARM_CATEGORY_HATE_SPEECH",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE",
-    },
-    {
-        "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE",
-    },
-    {
-        "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE",
-    },
-]
+# ── Fallback Responses (Demo Mode) ──
 
-
-# ── Fallback Responses (demo mode) ──
-FALLBACK_RESPONSES = {
+FALLBACK_RESPONSES: dict[str, str] = {
     "default": (
         "I'm ElectIQ, your election education assistant! I can help you "
         "understand the election process, voter registration, candidate "
@@ -129,7 +189,15 @@ _FALLBACK_KEYWORDS: list[tuple[list[str], str]] = [
 
 
 def _get_fallback_response(message: str) -> str:
-    """Select the most relevant fallback response based on keyword matching."""
+    """
+    Select the most relevant fallback response based on keyword matching.
+
+    Args:
+        message: The user's question to match against known topics.
+
+    Returns:
+        The most relevant curated response string.
+    """
     message_lower = message.lower()
     for keywords, topic in _FALLBACK_KEYWORDS:
         if any(kw in message_lower for kw in keywords):
@@ -140,13 +208,14 @@ def _get_fallback_response(message: str) -> str:
 async def stream_chat_response(
     system_prompt: str,
     message: str,
-    history: list[dict],
+    history: list[dict[str, str]],
 ) -> AsyncGenerator[str, None]:
     """
-    Stream a response from the Gemini API via Server-Sent Events.
+    Stream a response from the Google Gemini API.
 
-    If no API key is configured, falls back to curated demo responses
-    with simulated streaming for a consistent user experience.
+    Uses the official ``google-generativeai`` SDK for direct integration
+    with Google's AI services. If no API key is configured, falls back
+    to curated demo responses with simulated streaming.
 
     Args:
         system_prompt: Role-aware system instruction for Gemini.
@@ -157,8 +226,9 @@ async def stream_chat_response(
         Text tokens as they arrive from Gemini, or word-by-word
         from fallback responses.
     """
-    if not GEMINI_API_KEY:
-        logger.info("Gemini API key not configured — using fallback response")
+    # ── Demo Mode (no API key) ──
+    if not GeminiService.is_available():
+        logger.info("Using fallback response (demo mode)")
         fallback = _get_fallback_response(message)
         words = fallback.split(" ")
         for i, word in enumerate(words):
@@ -166,78 +236,56 @@ async def stream_chat_response(
             await asyncio.sleep(0.03)
         return
 
-    # Build Gemini API request payload
-    contents = []
+    # ── Build conversation history for Gemini SDK ──
+    contents: list[dict[str, object]] = []
     for entry in history:
         role = "user" if entry.get("role") == "user" else "model"
         contents.append({
             "role": role,
-            "parts": [{"text": entry.get("content", "")}],
+            "parts": [entry.get("content", "")],
         })
     contents.append({
         "role": "user",
-        "parts": [{"text": message}],
+        "parts": [message],
     })
 
-    payload = {
-        "contents": contents,
-        "systemInstruction": {
-            "parts": [{"text": system_prompt}],
-        },
-        "safetySettings": SAFETY_SETTINGS,
-        "generationConfig": {
-            "temperature": GEMINI_TEMPERATURE,
-            "topP": 0.9,
-            "topK": 40,
-            "maxOutputTokens": GEMINI_MAX_OUTPUT_TOKENS,
-        },
-    }
-
-    # Use API key as query parameter (required by Gemini REST API)
-    url = f"{GEMINI_STREAM_URL}?alt=sse&key={GEMINI_API_KEY}"
-
     try:
-        client = _http_client or httpx.AsyncClient(
-            timeout=GEMINI_TIMEOUT_SECONDS
+        model = GeminiService._create_model(system_prompt)
+        if model is None:
+            yield _get_fallback_response(message)
+            return
+
+        # Use the SDK's async streaming API
+        response = await model.generate_content_async(
+            contents,
+            stream=True,
         )
 
-        async with client.stream("POST", url, json=payload) as response:
-            if response.status_code != 200:
-                error_body = await response.aread()
-                logger.error(
-                    f"Gemini API error: status={response.status_code} "
-                    f"body={error_body[:200]}"
-                )
-                yield (
-                    "Sorry, I encountered an error connecting to the AI "
-                    f"service. (Status: {response.status_code})"
-                )
-                return
+        async for chunk in response:
+            if chunk.text:
+                yield chunk.text
 
-            async for line in response.aiter_lines():
-                if line.startswith("data: "):
-                    data_str = line[6:]
-                    if data_str.strip() == "[DONE]":
-                        break
-                    try:
-                        data = json.loads(data_str)
-                        candidates = data.get("candidates", [])
-                        if candidates:
-                            parts = (
-                                candidates[0]
-                                .get("content", {})
-                                .get("parts", [])
-                            )
-                            for part in parts:
-                                text = part.get("text", "")
-                                if text:
-                                    yield text
-                    except json.JSONDecodeError:
-                        continue
-
-    except httpx.TimeoutException:
-        logger.warning("Gemini API request timed out")
-        yield "Sorry, the request timed out. Please try a shorter question."
     except Exception as exc:
-        logger.error(f"Gemini API error: {exc}")
-        yield f"Sorry, I encountered an error. Please try again."
+        error_type = type(exc).__name__
+        logger.error("Gemini API error (%s): %s", error_type, exc)
+
+        # Fall back to curated responses on API error
+        logger.info("Falling back to curated response after API error")
+        fallback = _get_fallback_response(message)
+        words = fallback.split(" ")
+        for i, word in enumerate(words):
+            yield word + (" " if i < len(words) - 1 else "")
+            await asyncio.sleep(0.02)
+
+
+# ── Legacy Compatibility ──
+
+
+async def startup_client() -> None:
+    """Initialize the Gemini service (legacy compatibility wrapper)."""
+    GeminiService.initialize()
+
+
+async def shutdown_client() -> None:
+    """Clean up resources (no-op for SDK-based implementation)."""
+    logger.info("Gemini service cleanup complete")

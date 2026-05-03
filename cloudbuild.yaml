@@ -1,0 +1,74 @@
+# ──────────────────────────────────────────────
+# ElectIQ — Google Cloud Build CI/CD Pipeline
+#
+# This configuration file defines the build, test,
+# and deployment pipeline for Google Cloud Build.
+#
+# Google Cloud Services Used:
+#   - Cloud Build (CI/CD orchestration)
+#   - Cloud Run (deployment target)
+#   - Container Registry (image storage)
+# ──────────────────────────────────────────────
+
+steps:
+  # Step 1: Install dependencies and run tests
+  - name: 'python:3.11-slim'
+    id: 'test'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install --no-cache-dir -r requirements.txt
+        python -m pytest tests/ -v --tb=short --cov=backend --cov-report=term-missing
+
+  # Step 2: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/electiq:$SHORT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/electiq:latest'
+      - '.'
+
+  # Step 3: Push to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/electiq:$SHORT_SHA'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/electiq:latest'
+
+  # Step 4: Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'deploy'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'electiq'
+      - '--image=gcr.io/$PROJECT_ID/electiq:$SHORT_SHA'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--memory=512Mi'
+      - '--port=8080'
+      - '--min-instances=0'
+      - '--max-instances=10'
+
+# Build configuration
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+
+# Build timeout
+timeout: '600s'
+
+# Image artifacts
+images:
+  - 'gcr.io/$PROJECT_ID/electiq:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/electiq:latest'

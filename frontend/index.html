@@ -7,14 +7,17 @@
   <meta name="theme-color" content="#1a1f6e">
   <meta name="robots" content="index, follow">
   <meta name="author" content="ElectIQ Team">
+  <meta name="keywords" content="election, voting, civic education, democracy, quiz, India, EVM, voter registration">
   <meta property="og:title" content="ElectIQ — Election Education Assistant">
   <meta property="og:description" content="AI-powered, gamified civic education platform for informed citizens.">
   <meta property="og:type" content="website">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>ElectIQ — Election Education Assistant</title>
 
   <!-- Preconnect to Google Fonts for performance -->
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap">
 
   <!-- Styles -->
   <link rel="stylesheet" href="/css/main.css">
@@ -35,8 +38,8 @@
       </div>
       <div class="header-actions">
         <button class="role-badge" id="roleBadge" title="Change your role" aria-label="Change role. Current role: Voter">🗳️ Voter</button>
-        <button class="btn-icon" id="langToggle" onclick="I18n.toggle()" title="Switch language between English and Hindi" aria-label="Switch language">🇮🇳</button>
-        <button class="btn-icon" id="darkToggle" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
+        <button class="btn-icon" id="langToggle" title="Switch language between English and Hindi" aria-label="Switch language to Hindi">🇮🇳</button>
+        <button class="btn-icon" id="darkToggle" title="Toggle dark mode" aria-label="Switch to dark mode">🌙</button>
       </div>
     </header>
 
@@ -74,8 +77,8 @@
           <div class="chat-input-area">
             <div class="chat-input-wrapper">
               <label for="chatInput" class="sr-only">Type your election question</label>
-              <textarea class="chat-input" id="chatInput" placeholder="Ask me anything about elections..." rows="1" aria-label="Type your election question" maxlength="2000"></textarea>
-              <button class="chat-send-btn" id="chatSendBtn" title="Send message" aria-label="Send message">
+              <textarea class="chat-input" id="chatInput" placeholder="Ask me anything about elections..." rows="1" aria-label="Type your election question" maxlength="2000" autocomplete="off" spellcheck="true"></textarea>
+              <button class="chat-send-btn" id="chatSendBtn" title="Send message" aria-label="Send message" type="button">
                 <span aria-hidden="true">➤</span>
               </button>
             </div>
@@ -85,7 +88,7 @@
 
       <!-- ── Tab: Timeline ── -->
       <div class="tab-content" id="tab-timeline" role="tabpanel" aria-labelledby="tab-btn-timeline">
-        <div id="timelineContent">
+        <div id="timelineContent" aria-busy="true">
           <div class="empty-state" role="status">
             <div class="loading-dots" aria-label="Loading timeline"><span></span><span></span><span></span></div>
             <p class="empty-text">Loading timeline...</p>
@@ -95,7 +98,7 @@
 
       <!-- ── Tab: Scenarios ── -->
       <div class="tab-content" id="tab-scenarios" role="tabpanel" aria-labelledby="tab-btn-scenarios">
-        <div id="scenarioContent">
+        <div id="scenarioContent" aria-busy="true">
           <div class="empty-state" role="status">
             <div class="loading-dots" aria-label="Loading scenarios"><span></span><span></span><span></span></div>
             <p class="empty-text">Loading scenarios...</p>
@@ -105,7 +108,7 @@
 
       <!-- ── Tab: Quiz ── -->
       <div class="tab-content" id="tab-quiz" role="tabpanel" aria-labelledby="tab-btn-quiz">
-        <div id="quizContent">
+        <div id="quizContent" aria-busy="true">
           <div class="empty-state" role="status">
             <div class="loading-dots" aria-label="Loading quizzes"><span></span><span></span><span></span></div>
             <p class="empty-text">Loading quizzes...</p>
@@ -121,29 +124,29 @@
       <h2 class="modal-title" id="roleModalTitle">🗳️ Welcome to ElectIQ</h2>
       <p class="modal-subtitle" id="roleModalDesc">Choose your role so I can personalize your experience</p>
       <div class="role-grid" role="radiogroup" aria-label="Select your role">
-        <div class="role-card" data-role="voter" onclick="App.selectRole('voter')" role="radio" aria-checked="false" tabindex="0" aria-label="First-Time Voter: What do I need to do before election day?">
+        <div class="role-card" data-role="voter" role="radio" aria-checked="false" tabindex="0" aria-label="First-Time Voter: What do I need to do before election day?">
           <span class="role-icon" aria-hidden="true">🗳️</span>
           <div class="role-name">First-Time Voter</div>
           <div class="role-desc">What do I need to do before election day?</div>
         </div>
-        <div class="role-card" data-role="candidate" onclick="App.selectRole('candidate')" role="radio" aria-checked="false" tabindex="0" aria-label="Candidate: How do I file my nomination?">
+        <div class="role-card" data-role="candidate" role="radio" aria-checked="false" tabindex="0" aria-label="Candidate: How do I file my nomination?">
           <span class="role-icon" aria-hidden="true">🏛️</span>
           <div class="role-name">Candidate</div>
           <div class="role-desc">How do I file my nomination?</div>
         </div>
-        <div class="role-card" data-role="journalist" onclick="App.selectRole('journalist')" role="radio" aria-checked="false" tabindex="0" aria-label="Journalist: What are the campaign spending rules?">
+        <div class="role-card" data-role="journalist" role="radio" aria-checked="false" tabindex="0" aria-label="Journalist: What are the campaign spending rules?">
           <span class="role-icon" aria-hidden="true">📰</span>
           <div class="role-name">Journalist</div>
           <div class="role-desc">What are the campaign spending rules?</div>
         </div>
-        <div class="role-card" data-role="student" onclick="App.selectRole('student')" role="radio" aria-checked="false" tabindex="0" aria-label="Student: Explain the electoral process to me">
+        <div class="role-card" data-role="student" role="radio" aria-checked="false" tabindex="0" aria-label="Student: Explain the electoral process to me">
           <span class="role-icon" aria-hidden="true">🎓</span>
           <div class="role-name">Student</div>
           <div class="role-desc">Explain the electoral process to me</div>
         </div>
       </div>
-      <div style="text-align:center; margin-top:24px;">
-        <button class="btn btn-primary" onclick="App.confirmRole()" id="roleConfirmBtn" aria-label="Confirm role selection and get started">Get Started →</button>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="roleConfirmBtn" aria-label="Confirm role selection and get started">Get Started →</button>
       </div>
     </div>
   </div>
@@ -152,14 +155,14 @@
   <div class="panel-backdrop" id="panelBackdrop" aria-hidden="true"></div>
   <aside class="timeline-detail-panel" id="timelinePanel" role="complementary" aria-label="Timeline milestone details" aria-hidden="true">
     <div class="panel-header">
-      <div style="display:flex;align-items:center;gap:12px;">
+      <div class="panel-header-info">
         <span class="panel-icon" id="panelIcon" aria-hidden="true"></span>
         <div>
           <h3 class="panel-title" id="panelTitle"></h3>
-          <span style="font-size:13px;color:var(--text-muted)" id="panelDate"></span>
+          <span class="panel-date" id="panelDate"></span>
         </div>
       </div>
-      <button class="panel-close" id="panelClose" aria-label="Close detail panel">✕</button>
+      <button class="panel-close" id="panelClose" aria-label="Close detail panel" type="button">✕</button>
     </div>
     <div class="panel-body">
       <div class="panel-section">
@@ -178,7 +181,7 @@
         <h4 class="panel-section-title">Common Questions</h4>
         <ul class="panel-faq" id="panelFaq" role="list"></ul>
       </div>
-      <button class="btn btn-primary panel-ask-btn" id="panelAskBtn" aria-label="Ask ElectIQ about this topic">💬 Ask ElectIQ About This</button>
+      <button class="btn btn-primary panel-ask-btn" id="panelAskBtn" aria-label="Ask ElectIQ about this topic" type="button">💬 Ask ElectIQ About This</button>
     </div>
   </aside>
 
@@ -188,7 +191,7 @@
       <span class="badge-big-icon" id="badgeBigIcon" aria-hidden="true">🏆</span>
       <h2 class="badge-name" id="badgeName">Badge Earned!</h2>
       <p class="badge-desc">You're making great progress in civic education!</p>
-      <button class="btn btn-gold" onclick="document.getElementById('badgeOverlay').classList.add('hidden')" aria-label="Dismiss badge celebration">Awesome! 🎉</button>
+      <button class="btn btn-gold" id="badgeDismissBtn" aria-label="Dismiss badge celebration" type="button">Awesome! 🎉</button>
     </div>
   </div>
 

@@ -3,6 +3,9 @@ name = "electiq"
 version = "1.0.0"
 description = "Election Process Education Assistant — AI-powered, gamified civic education"
 requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "ElectIQ Team"}]
+keywords = ["election", "education", "civic", "gemini", "google-cloud"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -10,14 +13,22 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short --strict-markers"
+asyncio_mode = "auto"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks integration tests requiring external services",
 ]
 
 [tool.coverage.run]
 source = ["backend"]
 omit = ["tests/*", "backend/__pycache__/*"]
+branch = true
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 70
+fail_under = 85
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.",
+    "if TYPE_CHECKING:",
+]

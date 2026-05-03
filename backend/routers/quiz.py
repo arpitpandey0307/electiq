@@ -3,13 +3,20 @@ Quiz Router — Serves quiz questions by topic from cached data.
 
 Uses the in-memory DataCache to serve quiz data without disk I/O
 on each request. Provides both topic listing and per-topic question
-retrieval with proper error responses.
+retrieval with proper error responses and HTTP caching.
 """
 
+from __future__ import annotations
+
+from typing import Any
+
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 
 from backend.config import DataCache, logger
 from backend.models import QuizTopicListResponse, QuizTopicSummary
+
+__all__ = ["router"]
 
 router = APIRouter()
 
@@ -23,21 +30,38 @@ router = APIRouter()
         404: {"description": "Topic not found"},
     },
 )
-async def get_quiz(topic: str):
-    """Return quiz questions for a given topic from cached data."""
-    cache = DataCache.get_instance()
-    data = cache.quiz
+async def get_quiz(topic: str) -> JSONResponse:
+    """
+    Return quiz questions for a given topic from cached data.
+
+    Args:
+        topic: Quiz topic identifier (e.g., 'voter-registration').
+
+    Returns:
+        JSONResponse with quiz data and cache headers.
+
+    Raises:
+        HTTPException: 404 if the topic is not found.
+    """
+    cache: DataCache = DataCache.get_instance()
+    data: dict[str, Any] = cache.quiz
 
     if topic not in data:
         available = ", ".join(data.keys()) if data else "none"
-        logger.warning(f"Quiz topic not found: {topic}")
+        logger.warning("Quiz topic not found: %s", topic)
         raise HTTPException(
             status_code=404,
             detail=f"Topic '{topic}' not found. Available: {available}",
         )
 
-    logger.info(f"Serving quiz topic: {topic}")
-    return data[topic]
+    logger.info("Serving quiz topic: %s", topic)
+    return JSONResponse(
+        content=data[topic],
+        headers={
+            "Cache-Control": "public, max-age=3600",
+            "Vary": "Accept-Encoding",
+        },
+    )
 
 
 @router.get(
@@ -48,18 +72,15 @@ async def get_quiz(topic: str):
     "title, icon, and question count for the topic selector UI.",
 )
 async def list_quiz_topics() -> QuizTopicListResponse:
-    """List all available quiz topics from cached data."""
-    cache = DataCache.get_instance()
-    data = cache.quiz
+    """
+    List all available quiz topics from pre-computed cache.
 
-    topics = [
-        QuizTopicSummary(
-            id=key,
-            title=value.get("title", key),
-            icon=value.get("icon", "📝"),
-            question_count=len(value.get("questions", [])),
-        )
-        for key, value in data.items()
+    Returns:
+        QuizTopicListResponse with topic summaries.
+    """
+    cache: DataCache = DataCache.get_instance()
+    topics: list[QuizTopicSummary] = [
+        QuizTopicSummary(**summary)
+        for summary in cache.quiz_topic_summaries
     ]
-
     return QuizTopicListResponse(topics=topics)

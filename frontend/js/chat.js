@@ -2,7 +2,8 @@
  * ElectIQ — Chat Module
  *
  * SSE streaming chat with typewriter effect, accessible message log,
- * and quiz topic detection with cross-tab navigation.
+ * quiz topic detection with cross-tab navigation, and timestamps
+ * for screen reader users.
  */
 
 const Chat = {
@@ -58,7 +59,8 @@ const Chat = {
 
   async fetchSuggestions(role) {
     try {
-      const res = await fetch(`/api/chat/suggestions?role=${role}`);
+      const res = await fetch(`/api/chat/suggestions?role=${encodeURIComponent(role)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       this.suggestions = data.suggestions || [];
       this.renderSuggestions();
@@ -77,14 +79,33 @@ const Chat = {
     const container = document.getElementById('chatSuggestions');
     if (!container) return;
 
-    container.innerHTML = this.suggestions.map(q =>
-      `<button class="suggestion-chip" onclick="Chat.useSuggestion('${q.replace(/'/g, "\\'")}')" aria-label="Ask: ${q}">${q}</button>`
-    ).join('');
+    container.innerHTML = this.suggestions.map(q => {
+      const escaped = q.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      return `<button class="suggestion-chip" type="button" aria-label="Ask: ${q}" data-question="${escaped}">${q}</button>`;
+    }).join('');
+
+    // Attach event listeners (no inline onclick)
+    container.querySelectorAll('.suggestion-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        this.useSuggestion(chip.dataset.question);
+      });
+    });
   },
 
   useSuggestion(text) {
     this.inputEl.value = text;
     this.sendMessage();
+  },
+
+  /**
+   * Format a timestamp for screen reader accessibility.
+   * @returns {string} Formatted time string
+   */
+  _formatTimestamp() {
+    return new Date().toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   },
 
   async sendMessage() {
@@ -122,6 +143,10 @@ const Chat = {
         })
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
       this.hideTyping();
 
       // Create AI message bubble
@@ -152,7 +177,7 @@ const Chat = {
                 contentEl.innerHTML = this.formatMarkdown(fullResponse);
                 this.scrollToBottom();
               }
-            } catch (e) { /* skip malformed */ }
+            } catch (e) { /* skip malformed SSE data */ }
           }
         }
       }
@@ -182,11 +207,15 @@ const Chat = {
 
     const avatar = type === 'ai' ? '🗳️' : '👤';
     const sender = type === 'ai' ? 'ElectIQ' : 'You';
+    const timestamp = this._formatTimestamp();
 
     div.innerHTML = `
       <div class="message-avatar" aria-hidden="true">${avatar}</div>
       <div class="message-body">
-        <span class="message-sender">${sender}</span>
+        <div class="message-header">
+          <span class="message-sender">${sender}</span>
+          <time class="message-time" datetime="${new Date().toISOString()}">${timestamp}</time>
+        </div>
         <div class="message-content">
           <span class="message-text">${streaming ? '' : this.formatMarkdown(content)}</span>
         </div>
@@ -205,7 +234,7 @@ const Chat = {
     div.setAttribute('role', 'status');
     div.setAttribute('aria-label', 'ElectIQ is typing');
     div.innerHTML = `
-      <div class="message-avatar" aria-hidden="true" style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">🗳️</div>
+      <div class="message-avatar typing-avatar" aria-hidden="true">🗳️</div>
       <div class="typing-dots"><span></span><span></span><span></span></div>
     `;
     this.messagesEl.appendChild(div);
@@ -216,6 +245,11 @@ const Chat = {
     document.getElementById('typingIndicator')?.remove();
   },
 
+  /**
+   * Convert basic markdown formatting to HTML.
+   * @param {string} text - Raw text with markdown formatting
+   * @returns {string} HTML-formatted string
+   */
   formatMarkdown(text) {
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -236,8 +270,13 @@ const Chat = {
       cta.setAttribute('role', 'button');
       cta.setAttribute('tabindex', '0');
       cta.setAttribute('aria-label', 'Test your knowledge on this topic with a quiz');
-      cta.onclick = () => { App.switchTab('quiz'); };
-      cta.onkeydown = (e) => { if (e.key === 'Enter') App.switchTab('quiz'); };
+      cta.addEventListener('click', () => App.switchTab('quiz'));
+      cta.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          App.switchTab('quiz');
+        }
+      });
       cta.innerHTML = `
         <span aria-hidden="true">🏆</span>
         <span class="quiz-cta-text">Test your knowledge on this topic! →</span>

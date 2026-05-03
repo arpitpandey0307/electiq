@@ -1,8 +1,16 @@
 /**
  * ElectIQ — App Core: State Management, Router, and Accessibility
  *
- * Manages application state, tab navigation with full keyboard support,
- * dark mode, role selection, and the progressive badge system.
+ * Manages application state, tab navigation with full keyboard support
+ * (WAI-ARIA Tabs pattern), dark mode with system preference detection,
+ * role selection with focus trapping, and the progressive badge system.
+ *
+ * Accessibility Features:
+ *   - WAI-ARIA Tabs pattern with arrow key navigation
+ *   - Focus trapping in modals (role selection, badge overlay)
+ *   - Screen reader announcements via aria-live region
+ *   - Escape key support for dismissing overlays
+ *   - prefers-color-scheme and prefers-reduced-motion support
  */
 
 const App = {
@@ -37,6 +45,7 @@ const App = {
     this.initTabs();
     this.initHeaderActions();
     this.initKeyboardNav();
+    this.initModalEvents();
 
     // Initialize feature modules
     Chat.init();
@@ -48,7 +57,7 @@ const App = {
   // ── Accessibility: Screen Reader Announcements ──
 
   /**
-   * Announce a message to screen readers via the live region.
+   * Announce a message to screen readers via the aria-live region.
    * @param {string} message - Text to announce
    */
   announce(message) {
@@ -56,7 +65,41 @@ const App = {
     if (el) {
       el.textContent = '';
       // Brief delay ensures the live region triggers re-announcement
-      setTimeout(() => { el.textContent = message; }, 100);
+      requestAnimationFrame(() => {
+        setTimeout(() => { el.textContent = message; }, 100);
+      });
+    }
+  },
+
+  // ── Focus Trapping Utility ──
+
+  /**
+   * Trap keyboard focus within a container element.
+   * @param {HTMLElement} container - The container to trap focus within
+   * @param {KeyboardEvent} event - The keyboard event
+   */
+  trapFocus(container, event) {
+    if (event.key !== 'Tab') return;
+
+    const focusable = container.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey) {
+      if (document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     }
   },
 
@@ -67,15 +110,73 @@ const App = {
     modal.classList.remove('hidden');
     modal.removeAttribute('aria-hidden');
 
-    // Trap focus inside modal
+    // Store the element that opened the modal for focus restoration
+    this._previousFocus = document.activeElement;
+
+    // Focus first interactive element
     const firstFocusable = modal.querySelector('.role-card');
-    if (firstFocusable) firstFocusable.focus();
+    if (firstFocusable) {
+      requestAnimationFrame(() => firstFocusable.focus());
+    }
   },
 
   hideRoleModal() {
     const modal = document.getElementById('roleModal');
     modal.classList.add('hidden');
     modal.setAttribute('aria-hidden', 'true');
+
+    // Restore focus to the element that opened the modal
+    if (this._previousFocus && this._previousFocus.focus) {
+      this._previousFocus.focus();
+    }
+  },
+
+  initModalEvents() {
+    // Role card click handlers (moved from inline onclick)
+    document.querySelectorAll('.role-card').forEach(card => {
+      card.addEventListener('click', () => {
+        this.selectRole(card.dataset.role);
+      });
+    });
+
+    // Confirm button
+    const confirmBtn = document.getElementById('roleConfirmBtn');
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => this.confirmRole());
+    }
+
+    // Badge dismiss button
+    const badgeDismissBtn = document.getElementById('badgeDismissBtn');
+    if (badgeDismissBtn) {
+      badgeDismissBtn.addEventListener('click', () => {
+        document.getElementById('badgeOverlay').classList.add('hidden');
+      });
+    }
+
+    // Focus trapping in role modal
+    const roleModal = document.getElementById('roleModal');
+    if (roleModal) {
+      roleModal.addEventListener('keydown', (e) => {
+        this.trapFocus(roleModal, e);
+      });
+    }
+
+    // Focus trapping in badge overlay
+    const badgeOverlay = document.getElementById('badgeOverlay');
+    if (badgeOverlay) {
+      badgeOverlay.addEventListener('keydown', (e) => {
+        this.trapFocus(badgeOverlay, e);
+        if (e.key === 'Escape') {
+          badgeOverlay.classList.add('hidden');
+        }
+      });
+    }
+
+    // Language toggle
+    const langToggle = document.getElementById('langToggle');
+    if (langToggle) {
+      langToggle.addEventListener('click', () => I18n.toggle());
+    }
   },
 
   selectRole(role) {
@@ -178,9 +279,10 @@ const App = {
       });
     });
 
-    // Handle Escape to close modal
+    // Handle Escape to close overlays
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        // Close role modal (only if a role is already selected)
         const modal = document.getElementById('roleModal');
         if (!modal.classList.contains('hidden') && this.state.role) {
           this.hideRoleModal();
@@ -189,6 +291,11 @@ const App = {
         const panel = document.getElementById('timelinePanel');
         if (panel && panel.classList.contains('open')) {
           Timeline.closePanel();
+        }
+        // Close badge overlay
+        const badge = document.getElementById('badgeOverlay');
+        if (badge && !badge.classList.contains('hidden')) {
+          badge.classList.add('hidden');
         }
       }
     });
@@ -269,8 +376,13 @@ const App = {
 
     this.announce(`Congratulations! You earned the ${name} badge!`);
 
-    setTimeout(() => overlay.classList.add('hidden'), 3000);
-    overlay.addEventListener('click', () => overlay.classList.add('hidden'), { once: true });
+    // Focus the dismiss button for keyboard users
+    const dismissBtn = document.getElementById('badgeDismissBtn');
+    if (dismissBtn) {
+      requestAnimationFrame(() => dismissBtn.focus());
+    }
+
+    setTimeout(() => overlay.classList.add('hidden'), 5000);
   },
 
   hasBadge(id) {

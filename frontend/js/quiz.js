@@ -20,10 +20,13 @@ const Quiz = {
 
     try {
       const res = await fetch('/api/quiz');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       this.topics = data.topics;
       this.showTopicSelector();
+      container.removeAttribute('aria-busy');
     } catch (e) {
+      container.removeAttribute('aria-busy');
       container.innerHTML = '<div class="empty-state" role="alert"><span class="empty-icon" aria-hidden="true">⚠️</span><p class="empty-text">Unable to load quizzes.</p></div>';
     }
   },
@@ -54,8 +57,8 @@ const Quiz = {
       <h2 class="section-title">🏆 Election IQ Quiz</h2>
       <p class="section-subtitle">Test your knowledge and earn badges!</p>
       ${badgesHtml}
-      <div style="margin-bottom:8px;font-size:13px;color:var(--text-muted)" aria-live="polite">${completed}/${total} topics completed</div>
-      <div class="progress-bar-container" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Quiz progress: ${completed} of ${total} topics completed">
+      <div class="quiz-progress-summary" aria-live="polite">${completed}/${total} topics completed</div>
+      <div class="progress-bar-container" role="progressbar" aria-valuenow="${Math.round(pct)}" aria-valuemin="0" aria-valuemax="100" aria-label="Quiz progress: ${completed} of ${total} topics completed">
         <div class="progress-bar-fill" style="width:${pct}%"></div>
       </div>
       <div class="quiz-topics" role="list" aria-label="Quiz topics">
@@ -65,9 +68,8 @@ const Quiz = {
       const score = App.state.quizScores[t.id];
       const scoreLabel = score ? `✅ ${score.score}/${score.total}` : `${t.question_count} questions`;
       html += `
-        <div class="quiz-topic-card" onclick="Quiz.startQuiz('${t.id}')" tabindex="0" role="listitem"
-             aria-label="${t.title}: ${scoreLabel}"
-             onkeydown="if(event.key==='Enter')Quiz.startQuiz('${t.id}')">
+        <div class="quiz-topic-card" data-topic-id="${t.id}" tabindex="0" role="listitem"
+             aria-label="${t.title}: ${scoreLabel}">
           <span class="topic-icon" aria-hidden="true">${t.icon}</span>
           <span class="topic-name">${t.title}</span>
           <span class="topic-count">${scoreLabel}</span>
@@ -77,6 +79,19 @@ const Quiz = {
 
     html += '</div>';
     container.innerHTML = html;
+
+    // Attach event listeners (no inline onclick)
+    container.querySelectorAll('.quiz-topic-card').forEach(card => {
+      const topicId = card.dataset.topicId;
+      card.addEventListener('click', () => this.startQuiz(topicId));
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.startQuiz(topicId);
+        }
+      });
+    });
+
     App.announce(`Quiz loaded. ${total} topics available, ${completed} completed.`);
   },
 
@@ -87,7 +102,8 @@ const Quiz = {
     this.answered = false;
 
     try {
-      const res = await fetch(`/api/quiz/${topicId}`);
+      const res = await fetch(`/api/quiz/${encodeURIComponent(topicId)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       this.questions = data.questions;
       this.showQuestion();
@@ -106,34 +122,43 @@ const Quiz = {
 
     container.innerHTML = `
       <div class="quiz-game" role="region" aria-label="Quiz question ${qNum} of ${qTotal}">
-        <button class="btn btn-secondary btn-sm" onclick="Quiz.showTopicSelector()" style="margin-bottom:16px" aria-label="Go back to topic selection">← Back to Topics</button>
+        <button class="btn btn-secondary btn-sm quiz-back-btn" id="quizBackBtn" type="button" aria-label="Go back to topic selection">← Back to Topics</button>
         <div class="quiz-progress">
           <span class="quiz-progress-text" aria-live="polite">Question ${qNum} of ${qTotal}</span>
-          <div class="progress-bar-container" style="flex:1" role="progressbar" aria-valuenow="${((this.currentQ) / qTotal) * 100}" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress-bar-container" role="progressbar" aria-valuenow="${Math.round(((this.currentQ) / qTotal) * 100)}" aria-valuemin="0" aria-valuemax="100">
             <div class="progress-bar-fill" style="width:${((this.currentQ) / qTotal) * 100}%"></div>
           </div>
         </div>
         <div class="quiz-question-card">
           <p class="quiz-question-text" id="quizQuestionText">${q.q}</p>
-          <div class="quiz-options" role="group" aria-labelledby="quizQuestionText">
+          <div class="quiz-options" role="group" aria-labelledby="quizQuestionText" id="quizOptionsGroup">
             ${q.options.map((opt, i) => `
-              <button class="quiz-option" onclick="Quiz.answer(${i})" id="quizOpt${i}"
-                      aria-label="Option ${letters[i]}: ${opt}">
+              <button class="quiz-option" id="quizOpt${i}" type="button"
+                      aria-label="Option ${letters[i]}: ${opt}" aria-describedby="quizQuestionText">
                 <span class="option-letter" aria-hidden="true">${letters[i]}</span>
                 <span>${opt}</span>
               </button>
             `).join('')}
           </div>
-          <div class="quiz-explanation" id="quizExplanation" role="alert">
+          <div class="quiz-explanation" id="quizExplanation" role="region" aria-label="Explanation">
             <span class="explanation-label">💡 Explanation</span>
             ${q.explanation}
           </div>
-          <button class="btn btn-primary quiz-next-btn" id="quizNextBtn" onclick="Quiz.nextQuestion()">
+          <button class="btn btn-primary quiz-next-btn" id="quizNextBtn" type="button">
             ${this.currentQ < qTotal - 1 ? 'Next Question →' : 'See Results →'}
           </button>
         </div>
       </div>
     `;
+
+    // Attach event listeners
+    document.getElementById('quizBackBtn')?.addEventListener('click', () => this.showTopicSelector());
+    document.getElementById('quizNextBtn')?.addEventListener('click', () => this.nextQuestion());
+
+    container.querySelectorAll('.quiz-option').forEach((btn, i) => {
+      btn.addEventListener('click', () => this.answer(i));
+    });
+
     this.answered = false;
   },
 
@@ -158,12 +183,14 @@ const Quiz = {
 
     // Show explanation and next button
     document.getElementById('quizExplanation').classList.add('visible');
-    document.getElementById('quizNextBtn').classList.add('visible');
-    document.getElementById('quizNextBtn').focus();
+    const nextBtn = document.getElementById('quizNextBtn');
+    nextBtn.classList.add('visible');
+    requestAnimationFrame(() => nextBtn.focus());
 
-    // Disable all options
+    // Disable all options properly
     document.querySelectorAll('.quiz-option').forEach(el => {
       el.classList.add('selected');
+      el.disabled = true;
       el.setAttribute('aria-disabled', 'true');
     });
   },
@@ -195,12 +222,17 @@ const Quiz = {
         <h2 class="quiz-results-title">${pct}% Correct!</h2>
         <p class="quiz-results-subtitle">${message}</p>
         <div class="quiz-results-actions">
-          <button class="btn btn-primary" onclick="Quiz.startQuiz('${this.currentTopic}')" aria-label="Retry this quiz">🔄 Retry</button>
-          <button class="btn btn-secondary" onclick="Quiz.showTopicSelector()" aria-label="Back to all quiz topics">📋 All Topics</button>
-          <button class="btn btn-gold" onclick="Quiz.shareScore()" aria-label="Share your score">📤 Share Score</button>
+          <button class="btn btn-primary" id="quizRetryBtn" type="button" aria-label="Retry this quiz">🔄 Retry</button>
+          <button class="btn btn-secondary" id="quizAllTopicsBtn" type="button" aria-label="Back to all quiz topics">📋 All Topics</button>
+          <button class="btn btn-gold" id="quizShareBtn" type="button" aria-label="Share your score">📤 Share Score</button>
         </div>
       </div>
     `;
+
+    // Attach event listeners
+    document.getElementById('quizRetryBtn')?.addEventListener('click', () => this.startQuiz(this.currentTopic));
+    document.getElementById('quizAllTopicsBtn')?.addEventListener('click', () => this.showTopicSelector());
+    document.getElementById('quizShareBtn')?.addEventListener('click', () => this.shareScore());
 
     App.announce(`Quiz complete! You scored ${this.score} out of ${this.questions.length}. ${pct} percent correct.`);
   },
@@ -210,10 +242,12 @@ const Quiz = {
     const text = `🗳️ I scored ${pct}% on ElectIQ's Election Quiz! Test your knowledge too! #ElectIQ #CivicEducation`;
 
     if (navigator.share) {
-      navigator.share({ title: 'My ElectIQ Score', text });
-    } else {
+      navigator.share({ title: 'My ElectIQ Score', text }).catch(() => {});
+    } else if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(() => {
         App.announce('Score copied to clipboard');
+      }).catch(() => {
+        App.announce('Unable to copy score');
       });
     }
   }
